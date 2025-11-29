@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>論文管理</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    .toggle { cursor: pointer; font-weight: bold; margin-top: 10px; }
+    .hidden { display: none; }
+    .subcategory { margin-left: 20px; }
+    .paper-list { margin-left: 40px; }
+  </style>
+</head>
+
+<h1>論文管理</h1>
+<p>総論文数: <%= papers.length %></p>
+<a href="/add">論文を追加</a>
+
+<div class="card-container">
+  <% categories.forEach(cat => { %>
+    <div class="card">
+      <a href="/category/<%= cat %>" class="card-link">
+        <h2><%= cat %></h2>
+        <p><%= papers.filter(p => p.category === cat).length %> 件</p>
+      </a>
+    
+      <% if (latestByCategory[cat]) { %>
+        <div class="latest-paper">
+          <p>最新論文</p><br />
+          <span><%= latestByCategory[cat].title %></span>
+        </div>
+      <% } %>
+
+      <ul class="subcategory-list">
+        <% const subs = [...new Set(papers.filter(p => p.category === cat).map(p => p.subcategory || "未分類"))]; %>
+        <% subs.forEach(sub => { %>
+          <li><%= sub %></li>
+        <% }) %>
+      </ul>
+    </div>
+  <% }) %>
+</div>
+
+
+
+</body>
+</html>
+

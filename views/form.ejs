@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>論文管理-論文追加</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <h1>論文を追加</h1>
+    <form method="POST" action="/add">
+      <input name="title" placeholder="タイトル" required /><br />
+      <textarea name="summary" placeholder="要約" required></textarea><br />
+      <input name="link" placeholder="外部リンク" /><br />
+      <input name="pdfPath" placeholder="PDFファイルのパス" /><br />
+      
+      <input type="text" name="newCategory" placeholder="新しいカテゴリを入力" />
+      <label>カテゴリ:</label>
+      <select id="categorySelect" name="category">
+        <% categories.forEach(cat => { %>
+          <option value="<%= cat %>"><%= cat %></option>
+        <% }) %>
+      </select>
+      <br />
+
+      <input type="text" name="newSubCategory" placeholder="新しいサブカテゴリを入力" />
+      <label>サブカテゴリ:</label>
+      <select id="subcategorySelect" name="subcategory"></select>
+      <br />
+
+      <button type="submit">追加</button>
+    </form>
+
+
+    <script>
+      const categorySelect = document.getElementById("categorySelect");
+      const subcategorySelect = document.getElementById("subcategorySelect");
+
+      async function updateSubcategories() {
+        const selectedCategory = categorySelect.value;
+        if (!selectedCategory) return;
+
+        try {
+          const response = await fetch(`/subcategories/${encodeURIComponent(selectedCategory)}`);
+          const subs = await response.json();
+
+          subcategorySelect.innerHTML = "";
+          subs.forEach(sub => {
+            const option = document.createElement("option");
+            option.value = sub;
+            option.textContent = sub;
+            subcategorySelect.appendChild(option);
+          });
+        } catch (err) {
+          console.error("サブカテゴリ取得エラー:", err);
+        }
+      }
+
+      // 初期表示 & カテゴリ変更時に更新
+      categorySelect.addEventListener("change", updateSubcategories);
+      updateSubcategories();
+    </script>
+
+
+</body>
+</html>
