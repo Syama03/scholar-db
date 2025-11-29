@@ -31,6 +31,18 @@ function getPaperById(id) {
   return papers.find((p, index) => index.toString() === id);
 }
 
+const papersFile = path.join(__dirname, "/data/papers.json");
+
+// JSON読み込み
+function loadPapers() {
+  return JSON.parse(fs.readFileSync(papersFile, "utf8"));
+}
+
+// JSON保存
+function savePapers(papers) {
+  fs.writeFileSync(papersFile, JSON.stringify(papers, null, 2), "utf8");
+}
+
 // ホーム画面（カテゴリ別表示）
 app.get("/", (req, res) => {
   const papers = loadPapers();
@@ -119,15 +131,19 @@ app.post("/add", (req, res) => {
   if (!link && !pdfPath) {
     return res.status(400).send("リンクまたはPDFファイルのいずれかを入力してください");
   }
+  id = papers.length + 1
 
   papers.push({
+    id,
     title,
     summary,
     link: link || null,
     pdfPath: pdfPath || null,
     category: finalCategory,
-    subcategory: finalSubCategory || null
+    subcategory: finalSubCategory || null,
+    importance: false
   });
+  //TODO: importance を最初から設定できるように！！
 
   savePapers(papers);
   res.redirect("/");
@@ -170,4 +186,21 @@ app.get("/subcategories/:category", (req, res) => {
   const uniqueSubs = [...new Set(subs)];
 
   res.json(uniqueSubs);
+});
+
+// 重要フラグ切り替えAPI
+app.post("/papers/:id/toggle-important", (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const { important } = req.body;
+
+  const papers = loadPapers();
+  const paper = papers.find(p => p.id === id);
+
+  if (paper) {
+    paper.important = important;
+    savePapers(papers);
+    res.json({ success: true });
+  } else {
+    res.status(404).json({ success: false });
+  }
 });

@@ -22,7 +22,7 @@
               <h4>
                 <%= paper.title %>
                 <span class="star <%= paper.important ? 'active' : '' %>" 
-                      onclick="toggleStar(this)">
+                      onclick="toggleStar('<%= paper.id %>' , this)">
                   <%= paper.important ? '★' : '☆' %>
                 </span>
               </h4>
@@ -46,16 +46,16 @@
 </div>
 
 <script>
-  function toggleStar(el) {
-    if (el.classList.contains("active")) {
-      el.classList.remove("active");
-      el.textContent = "☆";
-    } else {
-      el.classList.add("active");
-      el.textContent = "★";
-    }
+async function toggleStar(paperId, el) {
+  const isActive = el.classList.contains("active");
+  el.classList.toggle("active");
+  el.textContent = isActive ? "☆" : "★";
 
-    // TODO: サーバーに状態を保存する処理を追加
-    // 例: fetch('/toggle-important', { method:'POST', body: JSON.stringify({ id: paperId }) })
-  }
+  // サーバーに状態を送信
+  await fetch(`/papers/${paperId}/toggle-important`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ important: !isActive })
+  });
+}
 </script>
