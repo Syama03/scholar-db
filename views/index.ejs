@@ -23,19 +23,21 @@
         <p><%= papers.filter(p => p.category === cat).length %> 件</p>
       </a>
     
-      <% if (latestByCategory[cat]) { %>
-        <div class="latest-paper">
-          <p>最新論文</p><br />
-          <span><%= latestByCategory[cat].title %></span>
-        </div>
-      <% } %>
+      <a href="/category/<%= cat %>">
+        <% if (latestByCategory[cat]) { %>
+          <div class="latest-paper">
+            <p>最新論文</p><br />
+            <span><%= latestByCategory[cat].title %></span>
+          </div>
+        <% } %>
+      </a>
 
-      <ul class="subcategory-list">
+      <a href="/category/<%= cat %>" class="subcategory-list">
         <% const subs = [...new Set(papers.filter(p => p.category === cat).map(p => p.subcategory || "未分類"))]; %>
         <% subs.forEach(sub => { %>
           <li><%= sub %></li>
         <% }) %>
-      </ul>
+        </a>
     </div>
   <% }) %>
 </div>
