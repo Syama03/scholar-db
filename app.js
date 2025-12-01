@@ -152,6 +152,7 @@ app.post("/add", (req, res) => {
 app.post("/edit/:id", (req, res) => {
   const papers = loadPapers();
   const index = parseInt(req.params.id);
+  const importance = papers[index].importance;
   if (isNaN(index) || index < 0 || index >= papers.length) {
     return res.status(400).send("無効なIDです");
   }
@@ -165,7 +166,7 @@ app.post("/edit/:id", (req, res) => {
   const finalCategory = newCategory && newCategory.trim() !== "" ? newCategory : category;
   const finalSubCategory = newSubCategory && newSubCategory.trim() !== "" ? newSubCategory : subcategory;
 
-  papers[index] = { title, summary, link: link || null, pdfPath: pdfPath || null, category: finalCategory, subcategory: finalSubCategory };
+  papers[index] = { title, summary, link: link || null, pdfPath: pdfPath || null, category: finalCategory, subcategory: finalSubCategory, importance };
   savePapers(papers);
   res.redirect("/");
 });

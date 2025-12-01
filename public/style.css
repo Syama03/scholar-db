@@ -231,3 +231,39 @@ textarea {
 .star.active {
   color: red;
 }
+
+.top-bar {
+  background-color: #333;
+  color: #fff;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.top-bar a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.top-bar a.home-button {
+  background-color: #555;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.bottom-bar {
+  background-color: #333; /* バーの色 */
+  padding: 10px 20px;
+  text-align: right;       /* 左寄せ */
+}
+
+.bottom-bar .home-button {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  background-color: #555;
+  padding: 5px 10px;
+  border-radius: 5px;
+}

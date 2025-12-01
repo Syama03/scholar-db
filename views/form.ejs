@@ -4,7 +4,16 @@
   <title>論文管理-論文追加</title>
   <link rel="stylesheet" href="/style.css" />
 </head>
+
 <body>
+<div id="header"></div>
+
+<script>
+fetch('/header.html')
+  .then(response => response.text())
+  .then(data => document.getElementById('header').innerHTML = data);
+</script>
+
   <h1>論文を追加</h1>
     <form method="POST" action="/add">
       <input name="title" placeholder="タイトル" required /><br />
@@ -59,6 +68,12 @@
       updateSubcategories();
     </script>
 
+<div id="footer"></div>
+<script>
+fetch('/footer.html')
+  .then(response => response.text())
+  .then(data => document.getElementById('footer').innerHTML = data);
+</script>
 
 </body>
 </html>

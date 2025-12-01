@@ -11,9 +11,14 @@
   </style>
 </head>
 
-<h1>論文管理</h1>
-<p>総論文数: <%= papers.length %></p>
-<a href="/add">論文を追加</a>
+<body>
+<div id="header"></div>
+
+<script>
+fetch('/header.html')
+  .then(response => response.text())
+  .then(data => document.getElementById('header').innerHTML = data);
+</script>
 
 <div class="card-container">
   <% categories.forEach(cat => { %>
@@ -42,7 +47,12 @@
   <% }) %>
 </div>
 
-
+<div id="footer"></div>
+<script>
+fetch('footer.html')
+  .then(response => response.text())
+  .then(data => document.getElementById('footer').innerHTML = data);
+</script>
 
 </body>
 </html>

@@ -5,8 +5,16 @@
   <link rel="stylesheet" href="/style.css" />
 </head>
 
+<body>
+<div id="header"></div>
+
+<script>
+fetch('/header.html')
+  .then(response => response.text())
+  .then(data => document.getElementById('header').innerHTML = data);
+</script>
+
 <h2><%= category %> の論文一覧</h2>
-<p><a href="/">トップページへ戻る</a></p>
 
 <div class="subcategory-container">
   <% Object.keys(grouped).forEach(sub => { %>
@@ -44,6 +52,14 @@
     </details>
   <% }) %>
 </div>
+
+<div id="footer"></div>
+<script>
+fetch('/footer.html')
+  .then(response => response.text())
+  .then(data => document.getElementById('footer').innerHTML = data);
+</script>
+</body>
 
 <script>
 async function toggleStar(paperId, el) {

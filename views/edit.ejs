@@ -4,7 +4,16 @@
   <title>論文管理-論文情報編集</title>
   <link rel="stylesheet" href="/style.css" />
 </head>
+
 <body>
+
+  <div id="header"></div>
+  <script>
+  fetch('/header.html')
+    .then(response => response.text())
+    .then(data => document.getElementById('header').innerHTML = data);
+  </script>
+
   <h1>論文を編集</h1>
     <form method="POST" action="/edit/<%= id %>">
       <input name="title" value="<%= paper.title %>" required /><br />
@@ -56,6 +65,13 @@
       categorySelect.addEventListener("change", updateSubcategories);
       updateSubcategories();
     </script>
+
+<div id="footer"></div>
+<script>
+fetch('/footer.html')
+  .then(response => response.text())
+  .then(data => document.getElementById('footer').innerHTML = data);
+</script>
 
 </body>
 </html>
