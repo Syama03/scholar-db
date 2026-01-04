@@ -20,32 +20,31 @@ fetch('/header.html')
   .then(data => document.getElementById('header').innerHTML = data);
 </script>
 
-<div class="card-container">
-  <% categories.forEach(cat => { %>
+<% categories.forEach(cat => { %>
+  <a href="/category/<%= cat %>" class="card-container" style="text-decoration: none; color: inherit;">
     <div class="card">
-      <a href="/category/<%= cat %>" class="card-link">
+      <div class="card-link">
         <h2><%= cat %></h2>
         <p><%= papers.filter(p => p.category === cat).length %> 件</p>
-      </a>
+      </div>
     
-      <a href="/category/<%= cat %>">
-        <% if (latestByCategory[cat]) { %>
-          <div class="latest-paper">
-            <p>最新論文</p><br />
-            <span><%= latestByCategory[cat].title %></span>
-          </div>
-        <% } %>
-      </a>
+      <% if (latestByCategory[cat]) { %>
+        <div class="latest-paper">
+          <p>最新論文</p><br />
+          <span><%= latestByCategory[cat].title %></span>
+        </div>
+      <% } %>
 
-      <a href="/category/<%= cat %>" class="subcategory-list">
+      <ul class="subcategory-list">
         <% const subs = [...new Set(papers.filter(p => p.category === cat).map(p => p.subcategory || "未分類"))]; %>
         <% subs.forEach(sub => { %>
           <li><%= sub %></li>
         <% }) %>
-        </a>
+      </ul>
     </div>
+   </a>
+  <br>
   <% }) %>
-</div>
 
 <div id="footer"></div>
 <script>

@@ -15,11 +15,12 @@ fetch('/header.html')
 </script>
 
   <h1>論文を追加</h1>
-    <form method="POST" action="/add">
+    <form method="POST" action="/add" enctype="multipart/form-data">
       <input name="title" placeholder="タイトル" required /><br />
       <textarea name="summary" placeholder="要約" required></textarea><br />
       <input name="link" placeholder="外部リンク" /><br />
-      <input name="pdfPath" placeholder="PDFファイルのパス" /><br />
+      <label>PDFアップロード</label><br />
+        <input type="file" name="pdf" accept="application/pdf" /><br />
       
       <input type="text" name="newCategory" placeholder="新しいカテゴリを入力" />
       <label>カテゴリ:</label>

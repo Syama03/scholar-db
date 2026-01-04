@@ -1,7 +1,6 @@
 {
   "name": "paperapp",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -14,6 +13,17 @@
     "body-parser": "^2.2.0",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
-    "multer": "^2.0.2"
-  }
+    "multer": "^2.0.2",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Syama03/apps-paperapp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Syama03/apps-paperapp/issues"
+  },
+  "homepage": "https://github.com/Syama03/apps-paperapp#readme",
+  "description": ""
 }

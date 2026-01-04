@@ -15,11 +15,12 @@
   </script>
 
   <h1>論文を編集</h1>
-    <form method="POST" action="/edit/<%= id %>">
+    <form method="POST" action="/edit/<%= id %>" enctype="multipart/form-data">
       <input name="title" value="<%= paper.title %>" required /><br />
       <textarea name="summary" required><%= paper.summary %></textarea><br />
       <input name="link" value="<%= paper.link %>" /><br />
-      <input name="pdfPath" value="<%= paper.pdfPath %>" /><br />
+      <label>PDFファイル:</label>
+        <input type="file" name="pdfFile" accept="application/pdf" /><br />
 
       <input type="text" name="newCategory" placeholder="新しいカテゴリを入力" />
       <label>カテゴリ:</label>

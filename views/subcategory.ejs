@@ -29,7 +29,7 @@ fetch('/header.html')
             <div class="paper-info">
               <h4>
                 <%= paper.title %>
-                <span class="star <%= paper.importance ? 'active' : '' %>" 
+                <span class="star <%= paper.important ? 'active' : '' %>" 
                       onclick="toggleStar('<%= paper.id %>' , this)">
                   <%= paper.important ? '★' : '☆' %>
                 </span>
@@ -40,10 +40,10 @@ fetch('/header.html')
                 <% if (paper.link) { %>
                   <a href="<%= paper.link %>" target="_blank">外部リンク</a>
                 <% } %>
-                <% if (paper.pdf_path) { %>
-                  <a href="/pdfs/<%= paper.pdf_path %>" target="_blank">PDF</a>
+                <% if (paper.pdfPath) { %>
+                  <a href="/pdfs/<%= paper.pdfPath %>" target="_blank">PDF</a>
                 <% } %>
-                  <a href="/edit/<%= paper.id %>" class="edit-link">編集</a>
+                  <a href="/edit/<%= papers.indexOf(paper) %>" class="edit-link">編集</a>
               </div>
             </div>
           </li>

@@ -1,51 +1,38 @@
 //https://copilot.microsoft.com/chats/Z6uAvRYMtFmWxbFLnYWYk
 
 const express = require("express");
-const fs = require("fs");
 const path = require("path");
-const bodyParser = require("body-parser");
+const sqlite3 = require('sqlite3').verbose();
+const { open } = require('sqlite');
+const multer = require("multer");
+
 
 const app = express();
 const PORT = 5001;
-const DATA_PATH = path.join(__dirname, "data", "papers.json");
 
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// データ読み込み
-function loadPapers() {
-  if (!fs.existsSync(DATA_PATH)) return [];
-  const raw = fs.readFileSync(DATA_PATH);
-  return JSON.parse(raw);
+let db;
+(async () => {
+  db = await open({
+    filename: './papers.db',
+    driver: sqlite3.Database
+  });
+})();
+
+async function loadPapers(){
+  return await db.all('select * from papers order by create_at desc')
 }
-
-// データ保存
-function savePapers(papers) {
-  fs.writeFileSync(DATA_PATH, JSON.stringify(papers, null, 2));
-}
-
-function getPaperById(id) {
-  const papers = loadPapers();
-  return papers.find((p, index) => index.toString() === id);
-}
-
-const papersFile = path.join(__dirname, "/data/papers.json");
-
-// JSON読み込み
-function loadPapers() {
-  return JSON.parse(fs.readFileSync(papersFile, "utf8"));
-}
-
-// JSON保存
-function savePapers(papers) {
-  fs.writeFileSync(papersFile, JSON.stringify(papers, null, 2), "utf8");
+async function getPaperById(id) {
+  return await db.get('SELECT * FROM papers WHERE id = ?', [id]);
 }
 
 // ホーム画面（カテゴリ別表示）
-app.get("/", (req, res) => {
-  const papers = loadPapers();
+app.get("/", async (req, res) => {
+  const papers = await loadPapers();
   const categories = [...new Set(papers.map(p => p.category))];
 
   // カテゴリごとに最新論文を取得
@@ -54,8 +41,8 @@ app.get("/", (req, res) => {
     const filtered = papers.filter(p => p.category === cat);
     if (filtered.length > 0) {
       // createdAt がある場合はソートして最新を取得
-      filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      latestByCategory[cat] = filtered[filtered.length -1];
+      filtered.sort((a, b) => new Date(b.creat_at) - new Date(a.create_at));
+      latestByCategory[cat] = filtered[0];
     }
   });
 
@@ -64,24 +51,22 @@ app.get("/", (req, res) => {
 
 
 // 論文追加フォーム
-app.get("/add", (req, res) => {
-  const papers = loadPapers();
+app.get("/add", async (req, res) => {
+  const papers = await loadPapers();
   const categories = [...new Set(papers.map(p => p.category))];
   const subcategories = [...new Set(papers.map(p => p.subcategory))];
   res.render("form", { categories, subcategories });
 });
 
-app.get("/edit/:id", (req, res) => {
-  const papers = loadPapers();
-  const index = parseInt(req.params.id);
-
-  if (isNaN(index) || index < 0 || index >= papers.length) {
-    return res.status(400).send("無効なIDです");
+app.get("/edit/:id", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const paper = await getPaperById(id);
+  if (!paper) {
+    return res.status(404).send("論文が見つかりません");
   }
-
+  const papers = await loadPapers();
   const categories = [...new Set(papers.map(p => p.category))];
 
-  // カテゴリ→サブカテゴリ対応表
   const subcategoriesMap = {};
   papers.forEach(p => {
     if (!subcategoriesMap[p.category]) {
@@ -95,12 +80,12 @@ app.get("/edit/:id", (req, res) => {
     subcategoriesMap[cat] = Array.from(subcategoriesMap[cat]);
   }
 
-  res.render("edit", { id: index, paper: papers[index], categories, subcategoriesMap });
+  res.render("edit", { id, paper, categories, subcategoriesMap });
 });
 
 // 大カテゴリごとのページ
-app.get("/category/:cat", (req, res) => {
-  const papers = loadPapers();
+app.get("/category/:cat", async (req, res) => {
+  const papers = await loadPapers();
   const cat = req.params.cat;
 
   const filtered = papers.filter(p => p.category === cat);
@@ -112,7 +97,6 @@ app.get("/category/:cat", (req, res) => {
     grouped[sub].push(p);
   });
 
-
   res.render("category", {
     category: cat,
     grouped, 
@@ -120,88 +104,116 @@ app.get("/category/:cat", (req, res) => {
   });
 });
 
+const uploadDir = path.join(__dirname, "public", "pdfs");
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName =
+      Date.now() + "-" + Math.round(Math.random() * 1e9) + ".pdf";
+    cb(null, uniqueName);
+  }
+});
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "application/pdf") {
+      cb(null, true);
+    } else {
+      cb(new Error("PDFのみアップロード可能です"));
+    }
+  }
+});
+
 // 論文追加処理
-app.post("/add", (req, res) => {
-  const papers = loadPapers();
-  const { title, summary, link, pdfPath, category, newCategory, subcategory, newSubCategory } = req.body;
+app.post("/add", async (req, res) => {
+  const { title, summary, link, category, newCategory, subcategory, newSubCategory } = req.body;
 
-  const finalCategory = newCategory && newCategory.trim() !== "" ? newCategory : category;
-  const finalSubCategory = newSubCategory && newSubCategory.trim() !== "" ? newSubCategory : subcategory;
+  const finalCategory = newCategory?.trim() || category;
+  const finalSubCategory = newSubCategory?.trim() || subcategory;
+  const pdfPath = req.file ? `/pdfs/${req.file.filename}` : null;
 
-  if (!link && !pdfPath) {
-    return res.status(400).send("リンクまたはPDFファイルのいずれかを入力してください");
-  }
-  id = papers.length + 1
+  if (!link && !pdfPath) return res.status(400).send("リンクまたはPDF必須");
 
-  papers.push({
-    id,
-    title,
-    summary,
-    link: link || null,
-    pdfPath: pdfPath || null,
-    category: finalCategory,
-    subcategory: finalSubCategory || null,
-    importance: false
-  });
-  //TODO: importance を最初から設定できるように！！
+  await db.run(
+    `INSERT INTO papers 
+      (title, summary, link, pdf_path, category, subcategory) 
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [title, summary, link || null, pdfPath || null, finalCategory, finalSubCategory || null]
+  );
 
-  savePapers(papers);
   res.redirect("/");
 });
 
-app.post("/edit/:id", (req, res) => {
-  const papers = loadPapers();
-  const index = parseInt(req.params.id);
-  const importance = papers[index].importance;
-  if (isNaN(index) || index < 0 || index >= papers.length) {
-    return res.status(400).send("無効なIDです");
+app.post("/edit/:id", upload.single("pdfFile"), async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const { title, summary, link, category, newCategory, subcategory, newSubCategory } = req.body;
+  const pdfFile = req.file;
+  const paper = await db.get('SELECT * FROM papers WHERE id = ?', [id]);
+  if (!paper) {
+    return res.status(404).send("論文が見つかりません");
   }
+  const finalCategory = newCategory?.trim() || category;
+  const finalSubCategory = newSubCategory?.trim() || subcategory;
+  const pdfPath = pdfFile ? pdfFile.filename : paper.pdf_path;
 
-  const { title, summary, link, pdfPath, category, newCategory, subcategory, newSubCategory } = req.body;
+  await db.run(
+    `UPDATE papers 
+     SET title = ?, summary = ?, link = ?, pdf_path = ?, category = ?, subcategory = ? 
+     WHERE id = ?`,
+    [title, summary, link || null, pdfPath || null, finalCategory, finalSubCategory || null, id]
+  );
 
-  if (!link && !pdfPath) {
-    return res.status(400).send("リンクまたはPDFパスのいずれかを入力してください");
-  }
-
-  const finalCategory = newCategory && newCategory.trim() !== "" ? newCategory : category;
-  const finalSubCategory = newSubCategory && newSubCategory.trim() !== "" ? newSubCategory : subcategory;
-
-  papers[index] = { title, summary, link: link || null, pdfPath: pdfPath || null, category: finalCategory, subcategory: finalSubCategory, importance };
-  savePapers(papers);
   res.redirect("/");
 });
 
+app.listen(PORT, async () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});
+
+// ------------------ サブカテゴリ検索API ------------------
+app.get("/subcategories/:category", async (req, res) => {
+  const category = req.params.category;
+  const subs = await db.all(
+    `SELECT DISTINCT subcategory FROM papers WHERE category = ? AND subcategory IS NOT NULL`,
+    [category]
+  );
+  res.json(subs.map(s => s.subcategory));
+});
+
+// ------------------ 重要フラグ切替 ------------------
+app.post("/papers/:id/toggle-important", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const { important } = req.body;
+  await db.run(`UPDATE papers SET importance = ? WHERE id = ?`, [important ? 1 : 0, id]);
+  res.json({ success: true });
+});
+
+// ------------------ サーバ起動 ------------------
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
 
-// サブカテゴリ検索用API
-app.get("/subcategories/:category", (req, res) => {
-  const papers = loadPapers();
-  const category = req.params.category;
+/*
+paperapp
+    |
+    |- data
+        |- paper.json
+    |- views
+        |- index.ejs
+        ...
+    |- public
+        |- pdfs
+            |- ...
+            |- ...
+        |- footer.html
+        |- header.htmll
+        |- style.css
+    |- app.js
+    |- package-lock.json
+    |- package.json
 
-  const subs = papers
-    .filter(p => p.category === category && p.subcategory)
-    .map(p => p.subcategory);
-
-  const uniqueSubs = [...new Set(subs)];
-
-  res.json(uniqueSubs);
-});
-
-// 重要フラグ切り替えAPI
-app.post("/papers/:id/toggle-important", (req, res) => {
-  const id = parseInt(req.params.id, 10);
-  const { important } = req.body;
-
-  const papers = loadPapers();
-  const paper = papers.find(p => p.id === id);
-
-  if (paper) {
-    paper.important = important;
-    savePapers(papers);
-    res.json({ success: true });
-  } else {
-    res.status(404).json({ success: false });
-  }
-});
+*/

@@ -1,2 +1,7 @@
-papers.json
 public/pdfs/
+data/
+.vscode/
+node_modules/
+.env
+.DS_Store
+transmit.py
