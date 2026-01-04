@@ -129,14 +129,16 @@ const upload = multer({
 });
 
 // 論文追加処理
-app.post("/add", async (req, res) => {
+app.post("/add",upload.single("pdf"), async (req, res) => {
   const { title, summary, link, category, newCategory, subcategory, newSubCategory } = req.body;
 
   const finalCategory = newCategory?.trim() || category;
   const finalSubCategory = newSubCategory?.trim() || subcategory;
-  const pdfPath = req.file ? `/pdfs/${req.file.filename}` : null;
+  const pdfPath = req.file ? `${req.file.filename}` : null;
 
-  if (!link && !pdfPath) return res.status(400).send("リンクまたはPDF必須");
+  if (!link && !pdfPath) {
+    return res.status(400).send("リンクまたはPDF必須");
+  }
 
   await db.run(
     `INSERT INTO papers 
