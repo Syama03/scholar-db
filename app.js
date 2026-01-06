@@ -1,5 +1,3 @@
-//https://copilot.microsoft.com/chats/Z6uAvRYMtFmWxbFLnYWYk
-
 const express = require("express");
 const path = require("path");
 const sqlite3 = require('sqlite3').verbose();
@@ -104,7 +102,7 @@ app.get("/category/:cat", async (req, res) => {
   });
 });
 
-const uploadDir = path.join(__dirname, "public", "pdfs");
+const uploadDir = path.join(__dirname, "public");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
