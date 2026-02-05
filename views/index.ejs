@@ -28,6 +28,18 @@ fetch('/header.html')
   </div>
 <% } %>
 
+<div style="margin-bottom: 30px; padding: 20px; background-color: #f9f9f9; border-radius: 4px;">
+  <h3 style="margin-top: 0;">タグ一覧</h3>
+  <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+    <% tags.forEach(tag => { %>
+      <a href="/tag/<%= encodeURIComponent(tag) %>" style="display: inline-block; padding: 8px 15px; background-color: #cccccc; color: black; border-radius: 20px; text-decoration: none; font-size: 14px; transition: background-color 0.3s;">
+        <% const count = papers.filter(p => { try { const t = JSON.parse(p.tags||'[]'); return t.includes(tag); } catch { return (p.tags||'').split(',').map(s=>s.trim()).includes(tag); } }).length; %>
+        <%= tag %> (<%= count %>)
+      </a>
+    <% }) %>
+  </div>
+</div>
+
 <% tags.forEach(tag => { %>
   <a href="/tag/<%= encodeURIComponent(tag) %>" class="card-container" style="text-decoration: none; color: inherit;">
     <div class="card">
