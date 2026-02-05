@@ -59,15 +59,13 @@ fetch('/header.html')
       <button type="submit">追加</button>
     </form>
 
-
-    <!-- タグは上のセレクトと新規タグ入力で扱います -->
-
 <div id="footer"></div>
 <script>
 fetch('/footer.html')
   .then(response => response.text())
   .then(data => document.getElementById('footer').innerHTML = data);
 </script>
+<script src="/search.js"></script>
 
 </body>
 </html>

@@ -20,6 +20,14 @@ fetch('/header.html')
   .then(data => document.getElementById('header').innerHTML = data);
 </script>
 
+<% if (notFound) { %>
+  <div style="padding: 20px; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; margin-bottom: 20px;">
+    <h3 style="color: #856404;">タグが見つかりません</h3>
+    <p>「<strong><%= searchedTag %></strong>」というタグは存在しません。</p>
+    <p>以下の利用可能なタグから選択してください：</p>
+  </div>
+<% } %>
+
 <% tags.forEach(tag => { %>
   <a href="/tag/<%= encodeURIComponent(tag) %>" class="card-container" style="text-decoration: none; color: inherit;">
     <div class="card">
@@ -46,6 +54,7 @@ fetch('footer.html')
   .then(response => response.text())
   .then(data => document.getElementById('footer').innerHTML = data);
 </script>
+<script src="/search.js"></script>
 
 </body>
 </html>

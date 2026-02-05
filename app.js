@@ -64,7 +64,7 @@ app.get("/", async (req, res) => {
     }
   });
 
-  res.render("index", { papers, tags, latestByTag });
+  res.render("index", { papers, tags, latestByTag, notFound: false });
 });
 
 
@@ -97,6 +97,29 @@ app.get("/tag/:tagName", async (req, res) => {
     const paperTags = parseTags(p.tags);
     return paperTags.includes(tagName);
   });
+
+  // タグが見つからない場合
+  if (filtered.length === 0) {
+    const allTags = papers.flatMap(p => parseTags(p.tags));
+    const tags = [...new Set(allTags)];
+    const latestByTag = {};
+    
+    tags.forEach(tag => {
+      const tagPapers = papers.filter(p => parseTags(p.tags).includes(tag));
+      if (tagPapers.length > 0) {
+        tagPapers.sort((a, b) => new Date(b.create_at) - new Date(a.create_at));
+        latestByTag[tag] = tagPapers[0];
+      }
+    });
+    
+    return res.render("index", { 
+      papers, 
+      tags, 
+      latestByTag,
+      notFound: true,
+      searchedTag: tagName
+    });
+  }
 
   res.render("tag", {
     tag: tagName,
