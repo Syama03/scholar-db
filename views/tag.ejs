@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>論文管理-<%= category %></title>
+  <title>論文管理-タグ: <%= tag %></title>
   <link rel="stylesheet" href="/style.css" />
 </head>
 
@@ -14,7 +14,7 @@ fetch('/header.html')
   .then(data => document.getElementById('header').innerHTML = data);
 </script>
 
-<h2><%= category %> の論文一覧</h2>
+<h2>タグ: <%= tag %> （<%= papers.length %> 件）</h2>
 
 <ul class="paper-list">
   <% papers.forEach(paper => { %>
@@ -48,6 +48,8 @@ fetch('/footer.html')
   .then(response => response.text())
   .then(data => document.getElementById('footer').innerHTML = data);
 </script>
+<script src="/search.js"></script>
+
 </body>
 
 <script>
@@ -56,7 +58,6 @@ async function toggleStar(paperId, el) {
   el.classList.toggle("active");
   el.textContent = isActive ? "☆" : "★";
 
-  // サーバーに状態を送信
   await fetch(`/papers/${paperId}/toggle-important`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

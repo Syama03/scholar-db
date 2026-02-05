@@ -1,10 +1,17 @@
 <header>
-  <nav class="top-bar">
-    <h1>論文管理</h1>
-    &emsp;
-    <a href="/" class="home-button">ホームへ戻る</a>
-    &nbsp;
-    <a href="/add">論文を追加</a>
+  <nav class="top-bar" style="display: flex; align-items: center; justify-content: space-between;">
+    <div>
+      <h1>論文管理</h1>
+    </div>
+    <div style="display: flex; gap: 15px; align-items: center;">
+      <div id="tagSearchContainer" style="display: inline-block; position: relative;">
+        <input type="text" id="headerTagSearch" placeholder="タグで検索..." style="width: 200px; padding: 5px;" />
+        <button id="headerTagSearchBtn" type="button" style="padding: 5px 10px;">検索</button>
+        <div id="tagSuggestions" style="display: none; position: absolute; background: white; border: 1px solid #ccc; max-height: 300px; overflow-y: auto; z-index: 1000; min-width: 200px; right: 0;"></div>
+      </div>
+      <a href="/add">論文を追加</a>
+      <a href="/" class="home-button">ホームへ戻る</a>
+    </div>
   </nav>
   <br>
 </header>

@@ -22,50 +22,48 @@
       <label>PDFファイル:</label>
         <input type="file" name="pdfFile" accept="application/pdf" /><br />
 
-      <input type="text" name="newCategory" placeholder="新しいカテゴリを入力" />
-      <label>カテゴリ:</label>
-      <select id="categorySelect" name="category">
-        <% categories.forEach(cat => { %>
-          <option value="<%= cat %>" <%= paper.category === cat ? "selected" : "" %>><%= cat %></option>
+      <label>既存タグ（複数選択可）:</label><br />
+      <input type="text" id="tagSearch" placeholder="タグを検索..." style="width: 100%; margin-bottom: 5px;" />
+      <div id="tagsCheckbox" style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; max-height: 200px; overflow-y: auto;">
+        <% 
+          let paperTags = [];
+          try { paperTags = JSON.parse(paper.tags || '[]'); } catch(e) { paperTags = paper.tags ? paper.tags.split(',').map(s=>s.trim()) : []; }
+        %>
+        <% tags.forEach(t => { %>
+          <div class="tag-checkbox-item" data-tag="<%= t %>">
+            <input type="checkbox" name="tags" value="<%= t %>" id="tag_<%= t.replace(/\s+/g, '_') %>" <%= paperTags.includes(t) ? 'checked' : '' %> />
+            <label for="tag_<%= t.replace(/\s+/g, '_') %>" style="margin-left: 5px; cursor: pointer;"><%= t %></label>
+          </div>
         <% }) %>
-      </select><br />
-
-      <input type="text" name="newSubCategory" placeholder="新しいサブカテゴリを入力" />
-      <label>サブカテゴリ:</label>
-      <select id="subcategorySelect" name="subcategory"></select>
+      </div>
+      <label>新しいタグ（カンマ区切り）:</label>
+      <input type="text" name="newTags" placeholder="例: IDS, セキュリティ" />
       <br />
+      
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          const tagSearch = document.getElementById('tagSearch');
+          const tagsCheckbox = document.getElementById('tagsCheckbox');
+          
+          if (!tagSearch || !tagsCheckbox) return;
+          
+          tagSearch.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            
+            const items = tagsCheckbox.querySelectorAll('.tag-checkbox-item');
+            items.forEach(item => {
+              const tagName = item.dataset.tag.toLowerCase();
+              const matches = tagName.includes(query);
+              item.style.display = matches ? '' : 'none';
+            });
+          });
+        });
+      </script>
 
       <button type="submit">保存</button>
     </form>
 
-    <script>
-      const categorySelect = document.getElementById("categorySelect");
-      const subcategorySelect = document.getElementById("subcategorySelect");
-
-      async function updateSubcategories() {
-        const selectedCategory = categorySelect.value;
-        if (!selectedCategory) return;
-
-        try {
-          const response = await fetch(`/subcategories/${encodeURIComponent(selectedCategory)}`);
-          const subs = await response.json();
-
-          subcategorySelect.innerHTML = "";
-          subs.forEach(sub => {
-            const option = document.createElement("option");
-            option.value = sub;
-            option.textContent = sub;
-            subcategorySelect.appendChild(option);
-          });
-        } catch (err) {
-          console.error("サブカテゴリ取得エラー:", err);
-        }
-      }
-
-      // 初期表示 & カテゴリ変更時に更新
-      categorySelect.addEventListener("change", updateSubcategories);
-      updateSubcategories();
-    </script>
+    <!-- タグは上のセレクトと新規タグ入力で扱います -->
 
 <div id="footer"></div>
 <script>
@@ -73,6 +71,7 @@ fetch('/footer.html')
   .then(response => response.text())
   .then(data => document.getElementById('footer').innerHTML = data);
 </script>
+<script src="/search.js"></script>
 
 </body>
 </html>

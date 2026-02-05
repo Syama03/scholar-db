@@ -20,27 +20,41 @@ fetch('/header.html')
   .then(data => document.getElementById('header').innerHTML = data);
 </script>
 
-<% categories.forEach(cat => { %>
-  <a href="/category/<%= cat %>" class="card-container" style="text-decoration: none; color: inherit;">
+<% if (notFound) { %>
+  <div style="padding: 20px; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; margin-bottom: 20px;">
+    <h3 style="color: #856404;">タグが見つかりません</h3>
+    <p>「<strong><%= searchedTag %></strong>」というタグは存在しません。</p>
+    <p>以下の利用可能なタグから選択してください：</p>
+  </div>
+<% } %>
+
+<div style="margin-bottom: 30px; padding: 20px; background-color: #f9f9f9; border-radius: 4px;">
+  <h3 style="margin-top: 0;">タグ一覧</h3>
+  <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+    <% tags.forEach(tag => { %>
+      <a href="/tag/<%= encodeURIComponent(tag) %>" style="display: inline-block; padding: 8px 15px; background-color: #cccccc; color: black; border-radius: 20px; text-decoration: none; font-size: 14px; transition: background-color 0.3s;">
+        <% const count = papers.filter(p => { try { const t = JSON.parse(p.tags||'[]'); return t.includes(tag); } catch { return (p.tags||'').split(',').map(s=>s.trim()).includes(tag); } }).length; %>
+        <%= tag %> (<%= count %>)
+      </a>
+    <% }) %>
+  </div>
+</div>
+
+<% tags.forEach(tag => { %>
+  <a href="/tag/<%= encodeURIComponent(tag) %>" class="card-container" style="text-decoration: none; color: inherit;">
     <div class="card">
       <div class="card-link">
-        <h2><%= cat %></h2>
-        <p><%= papers.filter(p => p.category === cat).length %> 件</p>
+        <h2><%= tag %></h2>
+        <p><%= papers.filter(p => { try { const t = JSON.parse(p.tags||'[]'); return t.includes(tag); } catch { return (p.tags||'').split(',').map(s=>s.trim()).includes(tag); } }).length %> 件</p>
       </div>
-    
-      <% if (latestByCategory[cat]) { %>
+
+      <% if (latestByTag[tag]) { %>
         <div class="latest-paper">
           <p>最新論文</p><br />
-          <span><%= latestByCategory[cat].title %></span>
+          <span><%= latestByTag[tag].title %></span>
         </div>
       <% } %>
 
-      <ul class="subcategory-list">
-        <% const subs = [...new Set(papers.filter(p => p.category === cat).map(p => p.subcategory || "未分類"))]; %>
-        <% subs.forEach(sub => { %>
-          <li><%= sub %></li>
-        <% }) %>
-      </ul>
     </div>
    </a>
   <br>
@@ -52,6 +66,7 @@ fetch('footer.html')
   .then(response => response.text())
   .then(data => document.getElementById('footer').innerHTML = data);
 </script>
+<script src="/search.js"></script>
 
 </body>
 </html>

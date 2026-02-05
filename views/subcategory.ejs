@@ -16,42 +16,31 @@ fetch('/header.html')
 
 <h2><%= category %> の論文一覧</h2>
 
-<div class="subcategory-container">
-  <% Object.keys(grouped).forEach(sub => { %>
-    <details class="subcategory-card">
-      <summary>
-        <span class="subcategory-title"><%= sub %></span>
-        <span class="count">（<%= grouped[sub].length %>件）</span>
-      </summary>
-      <ul class="paper-list">
-        <% grouped[sub].forEach(paper => { %>
-          <li class="paper-card">
-            <div class="paper-info">
-              <h4>
-                <%= paper.title %>
-                <span class="star <%= paper.important ? 'active' : '' %>" 
-                      onclick="toggleStar('<%= paper.id %>' , this)">
-                  <%= paper.important ? '★' : '☆' %>
-                </span>
-              </h4>
-              <p><%= paper.summary %></p>
+<ul class="paper-list">
+  <% papers.forEach(paper => { %>
+    <li class="paper-card">
+      <div class="paper-info">
+        <h4>
+          <%= paper.title %>
+          <span class="star <%= paper.importance ? 'active' : '' %>" onclick="toggleStar('<%= paper.id %>' , this)">
+            <%= paper.importance ? '★' : '☆' %>
+          </span>
+        </h4>
+        <p><%= paper.summary %></p>
 
-              <div class="links">
-                <% if (paper.link) { %>
-                  <a href="<%= paper.link %>" target="_blank">外部リンク</a>
-                <% } %>
-                <% if (paper.pdfPath) { %>
-                  <a href="/pdfs/<%= paper.pdfPath %>" target="_blank">PDF</a>
-                <% } %>
-                  <a href="/edit/<%= papers.indexOf(paper) %>" class="edit-link">編集</a>
-              </div>
-            </div>
-          </li>
-        <% }) %>
-      </ul>
-    </details>
+        <div class="links">
+          <% if (paper.link) { %>
+            <a href="<%= paper.link %>" target="_blank">外部リンク</a>
+          <% } %>
+          <% if (paper.pdf_path) { %>
+            <a href="/pdfs/<%= paper.pdf_path %>" target="_blank">PDF</a>
+          <% } %>
+            <a href="/edit/<%= paper.id %>" class="edit-link">編集</a>
+        </div>
+      </div>
+    </li>
   <% }) %>
-</div>
+</ul>
 
 <div id="footer"></div>
 <script>
