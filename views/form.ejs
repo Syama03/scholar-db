@@ -21,53 +21,23 @@ fetch('/header.html')
       <input name="link" placeholder="外部リンク" /><br />
       <label>PDFアップロード</label><br />
         <input type="file" name="pdf" accept="application/pdf" /><br />
-      
-      <input type="text" name="newCategory" placeholder="新しいカテゴリを入力" />
-      <label>カテゴリ:</label>
-      <select id="categorySelect" name="category">
-        <% categories.forEach(cat => { %>
-          <option value="<%= cat %>"><%= cat %></option>
+
+      <label>既存タグを選択（複数選択可）:</label><br />
+      <select name="tags" id="tagsSelect" multiple size="5">
+        <% tags.forEach(t => { %>
+          <option value="<%= t %>"><%= t %></option>
         <% }) %>
       </select>
       <br />
-
-      <input type="text" name="newSubCategory" placeholder="新しいサブカテゴリを入力" />
-      <label>サブカテゴリ:</label>
-      <select id="subcategorySelect" name="subcategory"></select>
+      <label>新しいタグ（カンマ区切りで複数可）:</label>
+      <input type="text" name="newTags" placeholder="例: IDS, セキュリティ" />
       <br />
 
       <button type="submit">追加</button>
     </form>
 
 
-    <script>
-      const categorySelect = document.getElementById("categorySelect");
-      const subcategorySelect = document.getElementById("subcategorySelect");
-
-      async function updateSubcategories() {
-        const selectedCategory = categorySelect.value;
-        if (!selectedCategory) return;
-
-        try {
-          const response = await fetch(`/subcategories/${encodeURIComponent(selectedCategory)}`);
-          const subs = await response.json();
-
-          subcategorySelect.innerHTML = "";
-          subs.forEach(sub => {
-            const option = document.createElement("option");
-            option.value = sub;
-            option.textContent = sub;
-            subcategorySelect.appendChild(option);
-          });
-        } catch (err) {
-          console.error("サブカテゴリ取得エラー:", err);
-        }
-      }
-
-      // 初期表示 & カテゴリ変更時に更新
-      categorySelect.addEventListener("change", updateSubcategories);
-      updateSubcategories();
-    </script>
+    <!-- タグは上のセレクトと新規タグ入力で扱います -->
 
 <div id="footer"></div>
 <script>

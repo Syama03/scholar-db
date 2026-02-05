@@ -20,27 +20,21 @@ fetch('/header.html')
   .then(data => document.getElementById('header').innerHTML = data);
 </script>
 
-<% categories.forEach(cat => { %>
-  <a href="/category/<%= cat %>" class="card-container" style="text-decoration: none; color: inherit;">
+<% tags.forEach(tag => { %>
+  <a href="/tag/<%= encodeURIComponent(tag) %>" class="card-container" style="text-decoration: none; color: inherit;">
     <div class="card">
       <div class="card-link">
-        <h2><%= cat %></h2>
-        <p><%= papers.filter(p => p.category === cat).length %> 件</p>
+        <h2><%= tag %></h2>
+        <p><%= papers.filter(p => { try { const t = JSON.parse(p.tags||'[]'); return t.includes(tag); } catch { return (p.tags||'').split(',').map(s=>s.trim()).includes(tag); } }).length %> 件</p>
       </div>
-    
-      <% if (latestByCategory[cat]) { %>
+
+      <% if (latestByTag[tag]) { %>
         <div class="latest-paper">
           <p>最新論文</p><br />
-          <span><%= latestByCategory[cat].title %></span>
+          <span><%= latestByTag[tag].title %></span>
         </div>
       <% } %>
 
-      <ul class="subcategory-list">
-        <% const subs = [...new Set(papers.filter(p => p.category === cat).map(p => p.subcategory || "未分類"))]; %>
-        <% subs.forEach(sub => { %>
-          <li><%= sub %></li>
-        <% }) %>
-      </ul>
     </div>
    </a>
   <br>
